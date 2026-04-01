@@ -1,8 +1,16 @@
+import { Link } from "react-router-dom";
 import { History } from "lucide-react";
 import ContestSectionTitle from "./ContestSectionTitle";
 import PastContestRow from "./PastContestRow";
 
-function PastContestTable({ contests, pastFilter, setPastFilter }) {
+function PastContestTable({
+  contests,
+  pastFilter,
+  setPastFilter,
+  footerLinkTo,
+  footerLinkLabel = "View all past contests",
+  showFooterLink = false,
+}) {
   return (
     <section>
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -47,6 +55,17 @@ function PastContestTable({ contests, pastFilter, setPastFilter }) {
           </div>
         )}
       </div>
+
+      {showFooterLink && footerLinkTo && contests.length > 0 && (
+        <div className="mt-4 flex justify-center">
+          <Link
+            to={footerLinkTo}
+            className="inline-flex items-center rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-semibold text-amber-700 transition hover:bg-amber-100"
+          >
+            {footerLinkLabel}
+          </Link>
+        </div>
+      )}
     </section>
   );
 }

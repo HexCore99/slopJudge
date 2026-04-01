@@ -1,7 +1,14 @@
 import ContestListCard from "./ContestListCard";
 import ContestSectionTitle from "./ContestSectionTitle";
 
-function ContestSection({ title, icon, contests, type, live = false }) {
+function ContestSection({
+  title,
+  icon,
+  contests,
+  type,
+  live = false,
+  onAction,
+}) {
   if (!contests.length) return null;
 
   return (
@@ -10,7 +17,13 @@ function ContestSection({ title, icon, contests, type, live = false }) {
 
       <div className="grid gap-4 xl:grid-cols-2">
         {contests.map((contest) => (
-          <ContestListCard key={contest.id} contest={contest} type={type} />
+          <ContestListCard
+            key={contest.id}
+            contest={contest}
+            type={type}
+            onAction={onAction}
+            isRegistered={Boolean(contest.registered)}
+          />
         ))}
       </div>
     </section>

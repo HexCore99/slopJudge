@@ -49,7 +49,7 @@ function SignupPage() {
       return;
     }
 
-    navigate("/student/contest", { replace: true });
+    navigate("/student/contests", { replace: true });
   }, [isAuthenticated, role, navigate]);
 
   function handleChange(e) {

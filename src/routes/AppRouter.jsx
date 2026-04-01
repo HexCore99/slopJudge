@@ -6,6 +6,7 @@ import SignupPage from "../pages/public/SignupPage";
 import StudentLayout from "../components/layout/StudentLayout";
 import ContestPage from "../pages/student/ContestPage";
 import ContestDetailsPage from "../pages/student/ContestDetailsPage";
+import PastContestsPage from "../pages/student/PastContestsPage";
 
 const router = createBrowserRouter([
   {
@@ -18,8 +19,9 @@ const router = createBrowserRouter([
     path: "/student",
     element: <StudentLayout />,
     children: [
-      { path: "contest", element: <ContestPage /> },
-      { path: "contest/:contestId", element: <ContestDetailsPage /> },
+      { path: "contests", element: <ContestPage /> },
+      { path: "contests/:contestId", element: <ContestDetailsPage /> },
+      { path: "contests/past", element: <PastContestsPage /> },
       // { path: "contst/:contestId", element: <ContestDetailsPage /> },
     ],
   },

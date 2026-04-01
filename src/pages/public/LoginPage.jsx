@@ -41,7 +41,7 @@ function LoginPage() {
       navigate("/admin", { replace: true });
       return;
     }
-    navigate("/student/contest", { replace: true });
+    navigate("/student/contests", { replace: true });
   }, [isAuthenticated, role, navigate]);
 
   function handleChange(e) {
@@ -54,7 +54,7 @@ function LoginPage() {
   }
   function handleStudentDemo() {
     //:Bypassed login demo
-    navigate("/student/contest");
+    navigate("/student/contests");
     return;
     // dispatch(
     //   loginUser({
