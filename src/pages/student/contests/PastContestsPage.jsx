@@ -1,16 +1,46 @@
 import { useEffect, useMemo, useState } from "react";
 import { History } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
-import StudentTopTabs from "../../components/layout/StudentTopTabs";
-import ContestPageHeader from "../../components/contest/ContestPageHeader";
-import PastContestTable from "../../components/contest/PastContestTable";
+import AppSearchInput from "../../../components/common/AppSearchInput";
+import StudentTopTabs from "../../../components/layout/StudentTopTabs";
+import PastContestTable from "../../../features/contests/components/PastContestTable";
 import {
   selectContestsError,
   selectContestsHasFetched,
   selectContestsLoading,
   selectPastContests,
-} from "../../features/contests/contestsSelectors";
-import { fetchContests } from "../../features/contests/contestsThunks";
+} from "../../../features/contests/contestsSelectors";
+import { fetchContests } from "../../../features/contests/contestsThunks";
+
+function PastContestsHero({ search, setSearch }) {
+  return (
+    <section className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+      <div className="pt-1">
+        <div className="flex items-start gap-3">
+          <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-200/90 bg-amber-50/70 text-amber-700 shadow-sm">
+            <History className="h-4.5 w-4.5" />
+          </div>
+
+          <div>
+            <h1 className="text-[48px] leading-none font-bold tracking-[-0.04em] text-slate-800 md:text-[56px]">
+              Past Contests
+            </h1>
+            <p className="mt-1.5 text-[14px] font-medium tracking-[0.01em] text-slate-500 md:text-[15px]">
+              Browse all previous contests
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <AppSearchInput
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        placeholder="Search past contests by name, type, or tag..."
+        containerClassName="w-full max-w-md lg:mt-2"
+      />
+    </section>
+  );
+}
 
 function PastContestsPage() {
   const dispatch = useDispatch();
@@ -54,14 +84,7 @@ function PastContestsPage() {
       <StudentTopTabs logoTo="/" />
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-        <ContestPageHeader
-          title="Past Contests"
-          subtitle="Browse all previous contests"
-          search={search}
-          setSearch={setSearch}
-          searchPlaceholder="Search past contests by name, type, or tag..."
-          icon={History}
-        />
+        <PastContestsHero search={search} setSearch={setSearch} />
 
         {error && (
           <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">

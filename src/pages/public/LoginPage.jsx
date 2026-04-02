@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import AuthShell from "../../components/auth/AuthShell";
-import AuthCard from "../../components/auth/AuthCard";
-import AuthHeader from "../../components/auth/AuthHeader";
-import AuthInput from "../../components/auth/AuthInput";
-import DemoAccess from "../../components/auth/DemoAccess";
 import { Link, useNavigate } from "react-router-dom";
+import AuthShell from "../../features/auth/components/AuthShell";
+import AuthCard from "../../features/auth/components/AuthCard";
+import AuthHeader from "../../features/auth/components/AuthHeader";
+import AuthInput from "../../features/auth/components/AuthInput";
+import DemoAccess from "../../features/auth/components/DemoAccess";
 
 import { loginUser } from "../../features/auth/authThunks";
 import { clearAuthError } from "../../features/auth/authSlice";
