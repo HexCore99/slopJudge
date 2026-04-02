@@ -2,6 +2,7 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   getContestDetailsApi,
   getContestsApi,
+  registerUpcomingContestApi,
   verifyContestPasswordApi,
 } from "./contestsApi";
 
@@ -13,6 +14,19 @@ export const fetchContests = createAsyncThunk(
     } catch (error) {
       return thunkAPI.rejectWithValue(
         error.message || "Failed to fetch contests.",
+      );
+    }
+  },
+);
+
+export const registerUpcomingContest = createAsyncThunk(
+  "contests/registerUpcomingContest",
+  async (contestId, thunkAPI) => {
+    try {
+      return await registerUpcomingContestApi(contestId);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(
+        error.message || "Failed to register for contest.",
       );
     }
   },
@@ -43,3 +57,4 @@ export const fetchContestDetails = createAsyncThunk(
     }
   },
 );
+//

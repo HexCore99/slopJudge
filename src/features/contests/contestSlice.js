@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import {
   fetchContestDetails,
   fetchContests,
+  registerUpcomingContest,
   verifyContestPassword,
 } from "./contestsThunks";
 
@@ -9,7 +10,9 @@ const initialState = {
   live: [],
   upcoming: [],
   past: [],
+  filters: [],
   isLoading: false,
+  hasFetched: false,
   error: null,
 
   passwordModal: {
@@ -46,18 +49,23 @@ const contestSlice = createSlice({
       state.passwordModal.error = null;
       state.passwordModal.isSubmitting = false;
     },
+
     setContestPasswordInput(state, action) {
       state.passwordModal.password = action.payload;
+      state.passwordModal.error = null;
     },
+
     clearContestPasswordError(state) {
       state.passwordModal.error = null;
     },
+
     clearContestDetails(state) {
       state.contestDetails.data = null;
       state.contestDetails.isLoading = false;
       state.contestDetails.error = null;
     },
   },
+
   extraReducers: (builder) => {
     builder
       .addCase(fetchContests.pending, (state) => {
@@ -66,13 +74,29 @@ const contestSlice = createSlice({
       })
       .addCase(fetchContests.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.live = action.payload.live;
-        state.upcoming = action.payload.upcoming;
-        state.past = action.payload.past;
+        state.hasFetched = true;
+        state.error = null;
+        state.filters = action.payload.filters || [];
+        state.live = action.payload.live || [];
+        state.upcoming = action.payload.upcoming || [];
+        state.past = action.payload.past || [];
       })
       .addCase(fetchContests.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload || "Failed to fetch contests.";
+      })
+
+      .addCase(registerUpcomingContest.fulfilled, (state, action) => {
+        const contest = state.upcoming.find(
+          (item) => item.id === action.payload.contestId,
+        );
+
+        if (contest) {
+          contest.registered = true;
+        }
+      })
+      .addCase(registerUpcomingContest.rejected, (state, action) => {
+        state.error = action.payload || "Failed to register for contest.";
       })
 
       .addCase(verifyContestPassword.pending, (state) => {
@@ -117,3 +141,5 @@ export const {
 } = contestSlice.actions;
 
 export default contestSlice.reducer;
+
+//

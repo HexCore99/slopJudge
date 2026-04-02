@@ -1,24 +1,34 @@
-import { CalendarDays, Clock3, Code2, Hourglass, Users } from "lucide-react";
+import {
+  ArrowRight,
+  CalendarDays,
+  Check,
+  Clock3,
+  Code2,
+  Hourglass,
+  Lock,
+  Users,
+} from "lucide-react";
+import Info from "../common/Info";
+import TagChip from "../common/TagChip";
 
-function Tag({ children }) {
-  return (
-    <span className="rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-      {children}
-    </span>
-  );
-}
-
-function Info({ icon: Icon, children }) {
-  return (
-    <div className="flex items-center gap-1.5 text-xs text-slate-500">
-      <Icon className="h-3.5 w-3.5" />
-      <span>{children}</span>
-    </div>
-  );
-}
-
-function ContestListCard({ contest, type = "live" }) {
+function ContestListCard({
+  contest,
+  type = "live",
+  onAction,
+  isRegistered = false,
+}) {
   const isLive = type === "live";
+  const isUpcoming = type === "upcoming";
+  const isPasswordProtected = isLive && contest.requiresPassword;
+  const isDisabled = isUpcoming && isRegistered;
+
+  const buttonText = isLive
+    ? isPasswordProtected
+      ? "Enter with Password"
+      : "Enter Contest"
+    : isRegistered
+      ? "Registered"
+      : "Register";
 
   return (
     <div
@@ -32,11 +42,10 @@ function ContestListCard({ contest, type = "live" }) {
         }`}
       />
 
+      {/* card content*/}
       <div className="ml-3">
         <div className="mb-2 flex flex-wrap items-center gap-3">
-          <h3 className="text-base font-bold text-slate-900">
-            QuickJudge {contest.name}
-          </h3>
+          <h3 className="text-base font-bold text-slate-900">{contest.name}</h3>
 
           <span
             className={`inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-bold tracking-[0.18em] uppercase ${
@@ -55,27 +64,42 @@ function ContestListCard({ contest, type = "live" }) {
         <p className="mb-4 text-sm text-slate-500">{contest.desc}</p>
 
         <div className="mb-4 flex flex-wrap gap-2">
-          {contest.tags.map((tag) => (
-            <Tag key={tag}>{tag}</Tag>
+          {contest.tags?.map((tag) => (
+            <TagChip key={tag}>{tag}</TagChip>
           ))}
         </div>
 
         <div className="mb-5 flex flex-wrap gap-x-5 gap-y-2">
           <Info icon={CalendarDays}>{contest.date}</Info>
-          <Info icon={Clock3}>{contest.time}</Info>
+          {contest.time && <Info icon={Clock3}>{contest.time}</Info>}
           <Info icon={Hourglass}>{contest.duration}</Info>
           <Info icon={Code2}>{contest.problems} problems</Info>
-          {isLive && <Info icon={Users}>{contest.participants} joined</Info>}
+          {isLive && contest.participants && (
+            <Info icon={Users}>{contest.participants} joined</Info>
+          )}
         </div>
 
         <button
-          className={`rounded-xl px-4 py-2 text-sm font-semibold text-white transition hover:scale-[1.02] ${
-            isLive
-              ? "bg-emerald-600 hover:bg-emerald-700"
-              : "bg-blue-600 hover:bg-blue-700"
+          type="button"
+          disabled={isDisabled}
+          onClick={() => onAction?.(contest, type)}
+          className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-white transition ${
+            isDisabled
+              ? "cursor-not-allowed bg-slate-400 opacity-80"
+              : isLive
+                ? "bg-emerald-600 hover:scale-[1.02] hover:bg-emerald-700"
+                : "bg-blue-600 hover:scale-[1.02] hover:bg-blue-700"
           }`}
         >
-          {isLive ? "Enter Contest" : "Register"}
+          {isPasswordProtected ? (
+            <Lock className="h-4 w-4" />
+          ) : isLive ? (
+            <ArrowRight className="h-4 w-4" />
+          ) : isRegistered ? (
+            <Check className="h-4 w-4" />
+          ) : null}
+
+          {buttonText}
         </button>
       </div>
     </div>

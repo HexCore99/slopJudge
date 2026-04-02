@@ -1,4 +1,4 @@
-import { createBrowserRouter, Route } from "react-router-dom";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 import PublicLayout from "../components/layout/PublicLayout";
 import LandingPage from "../pages/public/LandingPage";
 import LoginPage from "../pages/public/LoginPage";
@@ -6,6 +6,7 @@ import SignupPage from "../pages/public/SignupPage";
 import StudentLayout from "../components/layout/StudentLayout";
 import ContestPage from "../pages/student/ContestPage";
 import ContestDetailsPage from "../pages/student/ContestDetailsPage";
+import PastContestsPage from "../pages/student/PastContestsPage";
 
 const router = createBrowserRouter([
   {
@@ -18,9 +19,15 @@ const router = createBrowserRouter([
     path: "/student",
     element: <StudentLayout />,
     children: [
-      { path: "contest", element: <ContestPage /> },
-      { path: "contest/:contestId", element: <ContestDetailsPage /> },
-      // { path: "contst/:contestId", element: <ContestDetailsPage /> },
+      { path: "contests", element: <ContestPage /> },
+      { path: "contests/past", element: <PastContestsPage /> },
+
+      { path: ":contestId", element: <Navigate to="problems" replace /> },
+      { path: ":contestId/problems", element: <ContestDetailsPage /> },
+      { path: ":contestId/submissions", element: <ContestDetailsPage /> },
+      { path: ":contestId/leaderboard", element: <ContestDetailsPage /> },
+      { path: ":contestId/announcements", element: <ContestDetailsPage /> },
+      { path: ":contestId/queries", element: <ContestDetailsPage /> },
     ],
   },
 ]);
