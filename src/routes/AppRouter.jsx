@@ -2,6 +2,8 @@ import { Navigate, createBrowserRouter } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
 import AdminDashboard from "../pages/admin/dashboard/AdminDashboard";
 import CreateContestPage from "../pages/admin/contests/CreateContestPage";
+import CreateProblemPage from "../pages/admin/problems/CreateProblemPage";
+import EditorialsPage from "../pages/admin/editorials/EditorialsPage";
 import PublicLayout from "../components/layout/PublicLayout";
 import LandingPage from "../pages/public/LandingPage";
 import LoginPage from "../pages/public/LoginPage";
@@ -51,6 +53,8 @@ const router = createBrowserRouter([
     children: [
       { path: "dashboard", element: <AdminDashboard /> },
       { path: "contests/create", element: <CreateContestPage /> },
+      { path: "problems/create", element: <CreateProblemPage /> },
+      { path: "editorials", element: <EditorialsPage /> },
     ],
   },
 ]);
