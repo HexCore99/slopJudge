@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
 import AdminDashboard from "../pages/admin/dashboard/AdminDashboard";
+import CreateContestPage from "../pages/admin/contests/CreateContestPage";
 import PublicLayout from "../components/layout/PublicLayout";
 import LandingPage from "../pages/public/LandingPage";
 import LoginPage from "../pages/public/LoginPage";
@@ -49,6 +50,7 @@ const router = createBrowserRouter([
     element: <AdminLayout />,
     children: [
       { path: "dashboard", element: <AdminDashboard /> },
+      { path: "contests/create", element: <CreateContestPage /> },
     ],
   },
 ]);
