@@ -1,4 +1,6 @@
 import { Navigate, createBrowserRouter } from "react-router-dom";
+import AdminLayout from "../components/layout/AdminLayout";
+import AdminDashboard from "../pages/admin/dashboard/AdminDashboard";
 import PublicLayout from "../components/layout/PublicLayout";
 import LandingPage from "../pages/public/LandingPage";
 import LoginPage from "../pages/public/LoginPage";
@@ -12,6 +14,7 @@ import ContestProblemsPage from "../pages/student/contests/ContestProblemsPage";
 import ContestQueriesPage from "../pages/student/contests/ContestQueriesPage";
 import ContestSubmissionsPage from "../pages/student/contests/ContestSubmissionsPage";
 import PastContestsPage from "../pages/student/contests/PastContestsPage";
+import ProfilePage from "../pages/student/profile/ProfilePage";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +27,7 @@ const router = createBrowserRouter([
     path: "/student",
     element: <StudentLayout />,
     children: [
+      { path: "profile", element: <ProfilePage /> },
       { path: "contests", element: <ContestPage /> },
       { path: "contests/past", element: <PastContestsPage /> },
       {
@@ -38,6 +42,13 @@ const router = createBrowserRouter([
           { path: "queries", element: <ContestQueriesPage /> },
         ],
       },
+    ],
+  },
+  {
+    path: "/admin",
+    element: <AdminLayout />,
+    children: [
+      { path: "dashboard", element: <AdminDashboard /> },
     ],
   },
 ]);
