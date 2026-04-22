@@ -36,6 +36,7 @@ function StudentTopTabs({ tabs = defaultTabs, logoTo = "/", extraActions = null,
             <NavLink
               key={tab.key}
               to={tab.to}
+              end={tab.end}
               className={({ isActive }) =>
                 `inline-flex items-center justify-center rounded-full px-4 py-2 text-[14px] font-medium tracking-tight transition ${
                   isActive

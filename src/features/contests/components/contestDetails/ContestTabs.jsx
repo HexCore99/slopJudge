@@ -17,7 +17,7 @@ function ContestTabs() {
       {CONTEST_TABS.map(({ label, key, icon: Icon }) => (
         <NavLink
           key={key}
-          to={`/student/${contestId}/${key}`}
+          to={`/student/contests/${contestId}/${key}`}
           className={({ isActive }) =>
             `inline-flex items-center gap-2 rounded-lg px-4 py-2 transition ${
               isActive

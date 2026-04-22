@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
 import { User, Settings, LogOut } from "lucide-react";
+import { logout } from "../../features/auth/authSlice";
 
 const MENU_ITEMS = [
   { label: "Profile",  to: "/student/profile", Icon: User     },
@@ -8,6 +10,8 @@ const MENU_ITEMS = [
 ];
 
 export default function ProfileDropdown() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -43,15 +47,15 @@ export default function ProfileDropdown() {
         <div
           className="absolute right-0 mt-2 w-48 origin-top-right animate-[fadeSlideDown_0.15s_ease] rounded-xl border border-slate-200 bg-white py-1.5 shadow-lg"
         >
-          {MENU_ITEMS.map(({ label, to, Icon }) => (
+          {MENU_ITEMS.map((item) => (
             <Link
-              key={label}
-              to={to}
+              key={item.label}
+              to={item.to}
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-slate-600 transition hover:bg-slate-50 hover:text-slate-900"
             >
-              <Icon className="h-4 w-4 text-slate-400" />
-              {label}
+              <item.Icon className="h-4 w-4 text-slate-400" />
+              {item.label}
             </Link>
           ))}
 
@@ -60,7 +64,8 @@ export default function ProfileDropdown() {
           <button
             onClick={() => {
               setOpen(false);
-              // TODO: wire actual logout logic
+              dispatch(logout());
+              navigate("/login", { replace: true });
             }}
             className="flex w-full items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-red-600 transition hover:bg-red-50"
           >
