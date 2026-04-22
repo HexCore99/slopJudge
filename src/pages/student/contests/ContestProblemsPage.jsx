@@ -2,9 +2,15 @@ import { useOutletContext } from "react-router-dom";
 import ContestProblemsTable from "../../../features/contests/components/contestDetails/ContestProblemsTable";
 
 function ContestProblemsPage() {
-  const { contestDetails } = useOutletContext();
+  const { contestDetails, contestId } = useOutletContext();
 
-  return <ContestProblemsTable problems={contestDetails?.problems || []} />;
+  return (
+    <ContestProblemsTable
+      contestId={contestId}
+      contestTitle={contestDetails?.title}
+      problems={contestDetails?.problems || []}
+    />
+  );
 }
 
 export default ContestProblemsPage;

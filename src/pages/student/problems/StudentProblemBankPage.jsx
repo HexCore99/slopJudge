@@ -105,6 +105,7 @@ function StudentProblemBankPage() {
                       <td className="px-6 py-4">
                         <Link
                           to={`/student/problems/${problem.id}`}
+                          state={{ problem }}
                           className="text-[14px] font-semibold text-slate-800 transition-colors hover:text-amber-700"
                         >
                           {problem.title}
