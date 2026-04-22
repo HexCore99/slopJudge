@@ -1,9 +1,7 @@
 import { Link } from "react-router-dom";
-import { Trophy, FileText, Zap, CalendarDays, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
-import StudentTopTabs from "../../../components/layout/StudentTopTabs";
-import AdminMoreMenu from "../../../components/common/AdminMoreMenu";
-import { ADMIN_NAV_TABS } from "../../../features/admin/adminNavTabs";
+import { Trophy, FileText, Zap, CalendarDays, ChevronRight, Clock, Users, CheckCircle2, AlertCircle } from "lucide-react";
 
+// Mocks
 const STATS = [
   { label: "Total Contests",  value: 12, delta: "+2 this month", Icon: Trophy,       accent: "amber"   },
   { label: "Total Problems",  value: 48, delta: "+5 this month", Icon: FileText,     accent: "blue"    },
@@ -78,71 +76,56 @@ function ContestCard({ contest }) {
   );
 }
 
-export default function AdminDashboard() {
+export default function AdminDashboardPanel() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800">
-      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[length:24px_24px]" />
-      
-      <div className="relative z-[1]">
-        <StudentTopTabs tabs={ADMIN_NAV_TABS} logoTo="/" navExtra={<AdminMoreMenu />} />
+    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+        {STATS.map((s) => (
+          <StatCard key={s.label} stat={s} />
+        ))}
+      </div>
 
-        <main className="mx-auto max-w-7xl px-6 py-8 pb-20">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900">Admin Dashboard</h1>
-            <p className="mt-1 text-[14px] text-slate-500">Overview of your platform's activity and quick actions.</p>
+      <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
+        <div className="lg:col-span-3 space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-[16px] font-bold text-slate-800">Active & Upcoming Contests</h2>
           </div>
+          <div className="space-y-3">
+            {CONTESTS.map((c) => (
+              <ContestCard key={c.id} contest={c} />
+            ))}
+          </div>
+        </div>
 
-          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
-              {STATS.map((s) => (
-                <StatCard key={s.label} stat={s} />
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
-              <div className="lg:col-span-3 space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-[16px] font-bold text-slate-800">Active & Upcoming Contests</h2>
-                </div>
-                <div className="space-y-3">
-                  {CONTESTS.map((c) => (
-                    <ContestCard key={c.id} contest={c} />
-                  ))}
-                </div>
-              </div>
-
-              <div className="lg:col-span-2 space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-[16px] font-bold text-slate-800">Recent Problems</h2>
-                </div>
-                <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-                  <div className="flex flex-col gap-1">
-                    {PROBLEMS.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between border-b border-slate-100 py-3 last:border-0 hover:bg-slate-50/50 transition px-2 rounded-lg -mx-2">
-                        <div>
-                          <div className="text-[13px] font-semibold text-slate-800">{p.title}</div>
-                          <div className="mt-1 flex items-center gap-2">
-                            <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${diffStyles[p.difficulty]}`}>
-                              {p.difficulty}
-                            </span>
-                            <span className="text-[11px] font-medium text-slate-400">{p.tag}</span>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1">
-                          {p.hasEditorial ? (
-                            <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" /> Editorial</span>
-                          ) : (
-                            <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400"><AlertCircle className="h-3.5 w-3.5" /> No Editorial</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-[16px] font-bold text-slate-800">Recent Problems</h2>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-col gap-1">
+              {PROBLEMS.map((p) => (
+                <div key={p.id} className="flex items-center justify-between border-b border-slate-100 py-3 last:border-0 hover:bg-slate-50/50 transition px-2 rounded-lg -mx-2">
+                  <div>
+                    <div className="text-[13px] font-semibold text-slate-800">{p.title}</div>
+                    <div className="mt-1 flex items-center gap-2">
+                      <span className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${diffStyles[p.difficulty]}`}>
+                        {p.difficulty}
+                      </span>
+                      <span className="text-[11px] font-medium text-slate-400">{p.tag}</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1">
+                    {p.hasEditorial ? (
+                      <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-600"><CheckCircle2 className="h-3.5 w-3.5" /> Editorial</span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400"><AlertCircle className="h-3.5 w-3.5" /> No Editorial</span>
+                    )}
                   </div>
                 </div>
-              </div>
+              ))}
             </div>
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

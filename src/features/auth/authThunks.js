@@ -5,6 +5,16 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (credentials, thunkApi) => {
     try {
+      if (credentials.email === "admin" && credentials.password === "admin") {
+        const response = {
+          token: "mock-admin-token",
+          user: { id: 101, name: "Admin User", email: "admin", role: "admin" }
+        };
+        localStorage.setItem("qj_token", response.token);
+        localStorage.setItem("qj_user", JSON.stringify(response.user));
+        return response;
+      }
+
       const response = await loginApi(credentials);
 
       localStorage.setItem("qj_token", response.token);

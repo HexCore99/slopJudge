@@ -117,7 +117,7 @@ function ContestPage() {
       return;
     }
 
-    navigate(`/student/${contest.id}/problems`);
+    navigate(`/student/contests/${contest.id}/problems`);
   };
 
   const handlePasswordSubmit = async (e) => {
@@ -133,7 +133,7 @@ function ContestPage() {
         }),
       ).unwrap();
 
-      navigate(`/student/${passwordModal.contest.id}/problems`);
+      navigate(`/student/contests/${passwordModal.contest.id}/problems`);
     } catch {
       //
     }

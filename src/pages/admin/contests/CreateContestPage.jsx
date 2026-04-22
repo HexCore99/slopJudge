@@ -3,12 +3,9 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Calendar, Clock, Search, Lock, Globe, X } from "lucide-react";
 import StudentTopTabs from "../../../components/layout/StudentTopTabs";
 import AdminMoreMenu from "../../../components/common/AdminMoreMenu";
+import { ADMIN_NAV_TABS } from "../../../features/admin/adminNavTabs";
 
-const ADMIN_TABS = [
-  { key: "Dashboard", to: "/admin/dashboard" },
-  { key: "Contests",  to: "/admin/contests"  },
-  { key: "Problems",  to: "/admin/problems"  },
-];
+const ADMIN_CREATE_TABS = ADMIN_NAV_TABS.map((tab) => ({ ...tab, end: true }));
 
 const MOCK_PROBLEMS = [
   { id: 1, title: "Two Sum Variants", difficulty: "Easy", tag: "Array" },
@@ -43,7 +40,11 @@ export default function CreateContestPage() {
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[length:24px_24px]" />
       
       <div className="relative z-[1]">
-        <StudentTopTabs tabs={ADMIN_TABS} logoTo="/" navExtra={<AdminMoreMenu />} />
+        <StudentTopTabs
+          tabs={ADMIN_CREATE_TABS}
+          logoTo="/"
+          navExtra={<AdminMoreMenu excludeAction="contest" />}
+        />
 
         {/* Increased max-w to 7xl to match the dashboard and cover more page */}
         <main className="mx-auto max-w-7xl px-6 py-8 pb-20">

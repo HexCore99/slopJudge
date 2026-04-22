@@ -12,9 +12,10 @@ export default function ProfileTabs({
   onTabChange,
   contestCount,
 }) {
+
   return (
-    <div className="mb-6">
-      <div className="flex gap-1 rounded-[14px] border border-black/7 bg-slate-100 p-1">
+    <div className="mb-6 overflow-x-auto pb-1">
+      <div className="flex gap-1 rounded-[14px] border border-black/7 bg-slate-100 p-1 w-max">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

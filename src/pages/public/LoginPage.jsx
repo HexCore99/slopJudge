@@ -12,8 +12,6 @@ import { clearAuthError } from "../../features/auth/authSlice";
 import {
   selectAuthError,
   selectAuthLoading,
-  selectAuthRole,
-  selectIsAuthenticated,
 } from "../../features/auth/authSelectors";
 
 function LoginPage() {
@@ -22,8 +20,6 @@ function LoginPage() {
 
   const isLoading = useSelector(selectAuthLoading);
   const error = useSelector(selectAuthError);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const role = useSelector(selectAuthRole);
 
   const [formData, setFormData] = useState({
     email: "",
@@ -34,22 +30,26 @@ function LoginPage() {
     dispatch(clearAuthError());
   }, [dispatch]);
 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    if (role === "admin") {
-      navigate("/admin", { replace: true });
-      return;
-    }
-    navigate("/student/contests", { replace: true });
-  }, [isAuthenticated, role, navigate]);
-
   function handleChange(e) {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
-  function handleSubmit(e) {
+
+  async function handleSubmit(e) {
     e.preventDefault();
-    dispatch(loginUser(formData));
+
+    try {
+      const response = await dispatch(loginUser(formData)).unwrap();
+
+      if (response.user.role === "admin") {
+        navigate("/admin/dashboard", { replace: true });
+        return;
+      }
+
+      navigate("/student/contests", { replace: true });
+    } catch {
+      //
+    }
   }
   return (
     <div>
@@ -61,12 +61,12 @@ function LoginPage() {
         <AuthCard>
           <form onSubmit={handleSubmit} className="space-y-5">
             <AuthInput
-              label="Email"
-              type="email"
+              label="Email or Username"
+              type="text"
               name="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="you@bscse.uiu.ac.bd"
+              placeholder="Enter email or 'admin'"
               autocomplete="email"
             />
 

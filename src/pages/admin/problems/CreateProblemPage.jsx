@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, Trash2, Plus, Code, Target, Cpu, Clock, Tag, Star } from "lucide-react";
+import { ArrowLeft, Trash2, Plus, Code, Target, Cpu, Clock, Tag, Star, Eye, EyeOff } from "lucide-react";
 import StudentTopTabs from "../../../components/layout/StudentTopTabs";
 import AdminMoreMenu from "../../../components/common/AdminMoreMenu";
+import { ADMIN_NAV_TABS } from "../../../features/admin/adminNavTabs";
 
-const ADMIN_TABS = [
-  { key: "Dashboard", to: "/admin/dashboard" },
-  { key: "Contests",  to: "/admin/contests"  },
-  { key: "Problems",  to: "/admin/problems"  },
-];
+const ADMIN_CREATE_TABS = ADMIN_NAV_TABS.map((tab) => ({ ...tab, end: true }));
 
 const DIFFICULTIES = ["Easy", "Medium", "Hard"];
 const COMMON_TAGS = [
@@ -21,7 +18,9 @@ export default function CreateProblemPage() {
   const [selectedTags, setSelectedTags] = useState([]);
   const [customTags, setCustomTags] = useState([]);
   const [newTag, setNewTag] = useState("");
-  const [testCases, setTestCases] = useState([{ input: "", output: "" }]);
+  
+  // Updated test case state to include 'isHidden' flag
+  const [testCases, setTestCases] = useState([{ input: "", output: "", isHidden: false }]);
 
   const allTags = [...COMMON_TAGS, ...customTags];
 
@@ -48,7 +47,7 @@ export default function CreateProblemPage() {
   };
 
   const handleAddTestCase = () => {
-    setTestCases([...testCases, { input: "", output: "" }]);
+    setTestCases([...testCases, { input: "", output: "", isHidden: false }]);
   };
 
   const handleRemoveTestCase = (index) => {
@@ -69,7 +68,11 @@ export default function CreateProblemPage() {
       <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(rgba(0,0,0,0.04)_1px,transparent_1px)] bg-[length:24px_24px]" />
       
       <div className="relative z-[1]">
-        <StudentTopTabs tabs={ADMIN_TABS} logoTo="/" navExtra={<AdminMoreMenu />} />
+        <StudentTopTabs
+          tabs={ADMIN_CREATE_TABS}
+          logoTo="/"
+          navExtra={<AdminMoreMenu excludeAction="problem" />}
+        />
 
         <main className="mx-auto max-w-7xl px-6 py-8 pb-20">
           <Link to="/admin/dashboard" className="mb-6 inline-flex items-center gap-2 text-[13px] font-medium text-slate-500 transition hover:text-slate-800">
@@ -152,11 +155,28 @@ export default function CreateProblemPage() {
 
                 <div className="space-y-4">
                   {testCases.map((tc, idx) => (
-                    <div key={idx} className="relative rounded-xl border border-slate-100 bg-slate-50/50 p-4 pt-5">
-                      <div className="absolute right-3 top-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                        Case {idx + 1}
+                    <div key={idx} className={`relative rounded-xl border p-4 pt-5 transition-colors ${tc.isHidden ? "border-amber-200 bg-amber-50/40" : "border-slate-100 bg-slate-50/50"}`}>
+                      
+                      <div className="absolute right-3 top-3 flex items-center gap-3">
+                        {/* Hide/Show Toggle */}
+                        <button
+                          type="button"
+                          onClick={() => handleTestCaseChange(idx, 'isHidden', !tc.isHidden)}
+                          className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider transition ${
+                            tc.isHidden ? "text-amber-600" : "text-slate-400 hover:text-slate-600"
+                          }`}
+                          title="Toggle hidden test case (used for evaluation, but hidden from users)"
+                        >
+                          {tc.isHidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                          {tc.isHidden ? "Hidden" : "Visible"}
+                        </button>
+                        
+                        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                          Case {idx + 1}
+                        </span>
                       </div>
-                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-2">
                         <div>
                           <label className="mb-1.5 block text-[12px] font-medium text-slate-500">Input</label>
                           <textarea 
@@ -178,6 +198,7 @@ export default function CreateProblemPage() {
                           />
                         </div>
                       </div>
+                      
                       {testCases.length > 1 && (
                         <button 
                           type="button"
