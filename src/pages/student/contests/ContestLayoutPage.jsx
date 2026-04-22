@@ -65,7 +65,7 @@ function ContestLayoutPage() {
 
           <div className="p-6">
             <ContestTabs />
-            <Outlet context={{ contestDetails }} />
+            <Outlet context={{ contestDetails, contestId }} />
           </div>
         </div>
       </main>
