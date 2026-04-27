@@ -3,6 +3,11 @@ import {
   getContestsForUser,
   registerUserForUpcomingContest,
   verifyContestPasswordAccess,
+  getContestSubmissions,
+  getContestLeaderboard,
+  getContestAnnouncements,
+  getContestQueries,
+  submitContestQuery,
 } from "../services/contest.service.js";
 import { errorResponse, successResponse } from "../utils/response.js";
 import {
@@ -108,5 +113,61 @@ export async function verifyContestPassword(req, res) {
       error.statusCode || 500,
       error.message || "Password verification failed.",
     );
+  }
+}
+
+export async function getSubmissions(req, res) {
+  try {
+    const { contestId } = req.params;
+    const data = await getContestSubmissions(req.user.id, contestId);
+    return successResponse(res, 200, "Submissions fetched.", { items: data });
+  } catch (error) {
+    console.error("Get submissions error:", error);
+    return errorResponse(res, error.statusCode || 500, error.message || "Failed to fetch submissions.");
+  }
+}
+
+export async function getLeaderboard(req, res) {
+  try {
+    const { contestId } = req.params;
+    const data = await getContestLeaderboard(contestId, req.user.id);
+    return successResponse(res, 200, "Leaderboard fetched.", { items: data });
+  } catch (error) {
+    console.error("Get leaderboard error:", error);
+    return errorResponse(res, error.statusCode || 500, error.message || "Failed to fetch leaderboard.");
+  }
+}
+
+export async function getAnnouncements(req, res) {
+  try {
+    const { contestId } = req.params;
+    const data = await getContestAnnouncements(contestId);
+    return successResponse(res, 200, "Announcements fetched.", { items: data });
+  } catch (error) {
+    console.error("Get announcements error:", error);
+    return errorResponse(res, error.statusCode || 500, error.message || "Failed to fetch announcements.");
+  }
+}
+
+export async function getQueries(req, res) {
+  try {
+    const { contestId } = req.params;
+    const data = await getContestQueries(contestId);
+    return successResponse(res, 200, "Queries fetched.", { items: data });
+  } catch (error) {
+    console.error("Get queries error:", error);
+    return errorResponse(res, error.statusCode || 500, error.message || "Failed to fetch queries.");
+  }
+}
+
+export async function postQuery(req, res) {
+  try {
+    const { contestId } = req.params;
+    const { question } = req.body;
+    const data = await submitContestQuery(req.user.id, contestId, question);
+    return successResponse(res, 201, "Query submitted.", { item: data });
+  } catch (error) {
+    console.error("Post query error:", error);
+    return errorResponse(res, error.statusCode || 500, error.message || "Failed to submit query.");
   }
 }

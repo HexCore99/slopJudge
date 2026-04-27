@@ -306,3 +306,127 @@ export async function verifyContestPasswordAccess(userId, contestId, password) {
     contestId,
   };
 }
+
+export async function getContestSubmissions(userId, contestId) {
+  const [rows] = await pool.execute(
+    `SELECT
+       s.id,
+       s.problem_code,
+       s.language,
+       s.verdict,
+       s.submitted_at
+     FROM contest_submissions s
+     WHERE s.user_id = ? AND s.contest_id = ?
+     ORDER BY s.submitted_at DESC`,
+    [userId, contestId],
+  );
+
+  return rows.map((r) => ({
+    id: r.id,
+    problemCode: r.problem_code,
+    language: r.language,
+    verdict: r.verdict,
+    submittedAt: r.submitted_at,
+  }));
+}
+
+export async function getContestLeaderboard(contestId, currentUserId) {
+  const [rows] = await pool.execute(
+    `SELECT
+       user_id,
+       username,
+       solved,
+       total_penalty
+     FROM contest_leaderboard
+     WHERE contest_id = ?
+     ORDER BY solved DESC, total_penalty ASC`,
+    [contestId],
+  );
+
+  return rows.map((r, index) => ({
+    rank: index + 1,
+    userId: r.user_id,
+    username: r.username,
+    solved: r.solved,
+    penalty: r.total_penalty,
+    isMe: r.user_id === currentUserId,
+  }));
+}
+
+export async function getContestAnnouncements(contestId) {
+  const [rows] = await pool.execute(
+    `SELECT id, title, body, posted_at
+     FROM contest_announcements
+     WHERE contest_id = ?
+     ORDER BY posted_at DESC`,
+    [contestId],
+  );
+
+  return rows.map((r) => ({
+    id: r.id,
+    title: r.title,
+    body: r.body,
+    postedAt: r.posted_at,
+  }));
+}
+
+export async function getContestQueries(contestId) {
+  const [rows] = await pool.execute(
+    `SELECT id, user_id, username, question, answer, status, created_at, answered_at
+     FROM contest_queries
+     WHERE contest_id = ?
+     ORDER BY created_at DESC`,
+    [contestId],
+  );
+
+  return rows.map((r) => ({
+    id: r.id,
+    userId: r.user_id,
+    username: r.username,
+    question: r.question,
+    answer: r.answer,
+    status: r.status,
+    createdAt: r.created_at,
+    answeredAt: r.answered_at,
+  }));
+}
+
+export async function submitContestQuery(userId, contestId, question) {
+  if (!question || !question.trim()) {
+    throw createServiceError("Question cannot be empty.", 400);
+  }
+
+  const [contestRows] = await pool.execute(
+    `SELECT id FROM contests WHERE id = ? LIMIT 1`,
+    [contestId],
+  );
+
+  if (!contestRows.length) {
+    throw createServiceError("Contest not found.", 404);
+  }
+
+  const [userRows] = await pool.execute(
+    `SELECT name FROM users WHERE id = ? LIMIT 1`,
+    [userId],
+  );
+
+  const username = userRows.length ? userRows[0].name : "Unknown";
+
+  const [result] = await pool.execute(
+    `INSERT INTO contest_queries (contest_id, user_id, username, question)
+     VALUES (?, ?, ?, ?)`,
+    [contestId, userId, username, question.trim()],
+  );
+
+  return {
+    id: result.insertId,
+    contestId,
+    userId,
+    username,
+    question: question.trim(),
+    answer: null,
+    status: "pending",
+    createdAt: new Date(),
+    answeredAt: null,
+  };
+}
