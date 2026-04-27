@@ -68,3 +68,52 @@ export async function getContestDetailsApi(contestId) {
 
   return parseResponse(response);
 }
+
+export async function getContestSubmissionsApi(contestId) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/submissions`,
+    { method: "GET", headers: getAuthHeaders() },
+  );
+  const json = await parseResponse(response);
+  return json.items;
+}
+
+export async function getContestLeaderboardApi(contestId) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/leaderboard`,
+    { method: "GET", headers: getAuthHeaders() },
+  );
+  const json = await parseResponse(response);
+  return json.items;
+}
+
+export async function getContestAnnouncementsApi(contestId) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/announcements`,
+    { method: "GET", headers: getAuthHeaders() },
+  );
+  const json = await parseResponse(response);
+  return json.items;
+}
+
+export async function getContestQueriesApi(contestId) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/queries`,
+    { method: "GET", headers: getAuthHeaders() },
+  );
+  const json = await parseResponse(response);
+  return json.items;
+}
+
+export async function submitQueryApi(contestId, question) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/queries`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ question }),
+    },
+  );
+  const json = await parseResponse(response);
+  return json.item;
+}
