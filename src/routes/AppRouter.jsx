@@ -22,6 +22,7 @@ import PastContestsPage from "../pages/student/contests/PastContestsPage";
 import ProblemPage from "../pages/student/problems/ProblemPage";
 import StudentProblemBankPage from "../pages/student/problems/StudentProblemBankPage";
 import ProfilePage from "../pages/student/profile/ProfilePage";
+import DiscussionPage from "../pages/student/discussions/DiscussionPage";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +39,7 @@ const router = createBrowserRouter([
       { path: "contests", element: <ContestPage /> },
       { path: "contests/past", element: <PastContestsPage /> },
       { path: "problems", element: <StudentProblemBankPage /> },
+      { path: "discuss", element: <DiscussionPage /> },
       { path: "problems/:problemId", element: <ProblemPage /> },
       {
         path: "contests/:contestId/problems/:problemId",
