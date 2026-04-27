@@ -1,6 +1,6 @@
 # QuickJudge V2.0
 
-QuickJudge V2.0 is a full-stack coding contest app built with a React frontend and an Express + MySQL backend. The current app includes auth, protected contest APIs, contest browsing, contest details, password-protected live contests, and seed data for demoing the student contest flow.
+QuickJudge V2.0 is a full-stack coding contest platform built with a React frontend and an Express + MySQL backend. The project currently covers authentication, contest browsing, contest details, protected contest access, and student-facing contest flows.
 
 ## Tech Stack
 
@@ -13,7 +13,6 @@ QuickJudge V2.0 is a full-stack coding contest app built with a React frontend a
 - Node.js `^20.19.0 || >=22.12.0`
 - npm
 - MySQL
-
 
 ## Installation
 
@@ -32,7 +31,7 @@ npm install
 
 ## Backend Environment
 
-Create or update [backend/.env](E:/ProG/QuickJudge/QuickJudgeV2.0/backend/.env) with values like these:
+Create or update `backend/.env` with values like these:
 
 ```env
 PORT=5000
@@ -45,10 +44,9 @@ JWT_SECRET=change_this_secret
 FRONTEND_URL=http://localhost:5173
 ```
 
-## Database and Seed Data
+## Database Setup
 
-Open `XAMPP` Go to phpMyAdmin and import `quickjudge.sql` from `QuickJudgeV2.0/Database/quickjudge.sql`.
-
+Open XAMPP, go to phpMyAdmin, and import `Database/quickjudge.sql`.
 
 ## Running the App
 
@@ -69,6 +67,43 @@ Default local URLs:
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:5000`
+
+## Task and Sub-Task Tree
+
+### Task: Student Profile Page
+
+```text
+Student Profile Page
+|-- Overview
+|-- Activity Records
+|-- Profile Description
+|-- Problem Breakdown
+|-- Achievements
+|-- Submission Heatmap
+|-- Submission
+|   `-- List of Submissions
+|-- Activity
+|   `-- Activity Feed
+`-- Contests
+    `-- List of Participated Contests
+```
+
+### Task: Admin Create Contest Page
+
+```text
+Admin Create Contest Page
+|-- Basic Information
+|   |-- Title
+|   `-- Description
+|-- Schedule
+|   |-- Start Time
+|   `-- End Time
+|-- Problems
+|   `-- Select Problems
+`-- Visibility
+    |-- Public Contest
+    `-- Private Contest with Password
+```
 
 ## Frontend Structure
 
