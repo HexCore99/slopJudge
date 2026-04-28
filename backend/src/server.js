@@ -3,6 +3,7 @@ import cors from "cors";
 import express from "express";
 import authRoutes from "./routes/auth.routes.js";
 import contestRoutes from "./routes/contest.routes.js";
+import problemRoutes from "./routes/problem.routes.js";
 import { checkDatabaseConnection } from "./config/db.js";
 
 const app = express();
@@ -25,6 +26,7 @@ app.get("/", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/contests", contestRoutes);
+app.use("/api/problems", problemRoutes);
 
 const PORT = process.env.PORT || 5000;
 

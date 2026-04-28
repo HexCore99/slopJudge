@@ -43,6 +43,15 @@ function formatDuration(totalMinutes) {
   return `${minutes}m`;
 }
 
+function addMinutes(dateValue, minutes) {
+  const date = new Date(dateValue);
+  return new Date(date.getTime() + minutes * 60 * 1000);
+}
+
+function formatSqlDateTime(date) {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
 async function getTagsMap(contestIds) {
   if (!contestIds.length) {
     return {};
@@ -80,6 +89,42 @@ async function hasContestAccess(userId, contestId) {
   return rows.length > 0;
 }
 
+async function ensureContestExists(contestId) {
+  const [rows] = await pool.execute(
+    `SELECT id
+     FROM contests
+     WHERE id = ?
+     LIMIT 1`,
+    [contestId],
+  );
+
+  if (!rows.length) {
+    throw createServiceError("Contest not found.", 404);
+  }
+}
+
+function mapAnnouncementRow(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    body: row.body,
+    postedAt: row.posted_at,
+  };
+}
+
+function mapQueryRow(row) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    username: row.username,
+    question: row.question,
+    answer: row.answer,
+    status: row.status,
+    createdAt: row.created_at,
+    answeredAt: row.answered_at,
+  };
+}
+
 export async function getContestsForUser(userId) {
   const [liveRows] = await pool.execute(
     `SELECT
@@ -104,6 +149,7 @@ export async function getContestsForUser(userId) {
        c.start_time,
        c.duration_minutes,
        c.problems_count,
+       c.participants_count,
        c.requires_password,
        EXISTS(
          SELECT 1
@@ -121,6 +167,7 @@ export async function getContestsForUser(userId) {
        c.id,
        c.name,
        c.start_time,
+       c.duration_minutes,
        c.contest_type,
        c.problems_count,
        c.is_rated,
@@ -150,9 +197,12 @@ export async function getContestsForUser(userId) {
       id: row.id,
       name: row.name,
       desc: row.description || "",
+      startTime: row.start_time,
+      endTime: addMinutes(row.start_time, row.duration_minutes),
       date: formatDate(row.start_time),
       time: formatTime(row.start_time),
       duration: formatDuration(row.duration_minutes),
+      durationMinutes: row.duration_minutes,
       problems: row.problems_count,
       participants: row.participants_count,
       requiresPassword: Boolean(row.requires_password),
@@ -162,17 +212,24 @@ export async function getContestsForUser(userId) {
       id: row.id,
       name: row.name,
       desc: row.description || "",
+      startTime: row.start_time,
+      endTime: addMinutes(row.start_time, row.duration_minutes),
       date: formatDate(row.start_time),
       time: formatTime(row.start_time),
       duration: formatDuration(row.duration_minutes),
+      durationMinutes: row.duration_minutes,
       problems: row.problems_count,
+      participants: row.participants_count || 0,
       registered: Boolean(row.registered),
       tags: tagsMap[row.id] || [],
     })),
     past: pastRows.map((row) => ({
       id: row.id,
       name: row.name,
+      startTime: row.start_time,
+      endTime: addMinutes(row.start_time, row.duration_minutes),
       date: formatDate(row.start_time),
+      durationMinutes: row.duration_minutes,
       type: row.contest_type || "Contest",
       participated: Boolean(row.participated),
       rank: row.participated ? row.rank_position : null,
@@ -184,7 +241,49 @@ export async function getContestsForUser(userId) {
   };
 }
 
-export async function getContestDetailsById(userId, contestId) {
+export async function updateContestSchedule(contestId, { startTime, endTime }) {
+  await ensureContestExists(contestId);
+
+  const startDate = new Date(startTime);
+  const endDate = new Date(endTime);
+  const durationMinutes = Math.round(
+    (endDate.getTime() - startDate.getTime()) / (60 * 1000),
+  );
+
+  await pool.execute(
+    `UPDATE contests
+     SET start_time = ?, duration_minutes = ?
+     WHERE id = ?`,
+    [formatSqlDateTime(startDate), durationMinutes, contestId],
+  );
+
+  return {
+    contestId,
+    startTime: startDate,
+    endTime: endDate,
+    durationMinutes,
+  };
+}
+
+export async function deleteContestById(contestId) {
+  const [result] = await pool.execute(`DELETE FROM contests WHERE id = ?`, [
+    contestId,
+  ]);
+
+  if (!result.affectedRows) {
+    throw createServiceError("Contest not found.", 404);
+  }
+
+  return {
+    contestId,
+  };
+}
+
+export async function getContestDetailsById(
+  userId,
+  contestId,
+  userRole = "student",
+) {
   const [contestRows] = await pool.execute(
     `SELECT
        id,
@@ -205,6 +304,7 @@ export async function getContestDetailsById(userId, contestId) {
   const contest = contestRows[0];
 
   if (
+    userRole !== "admin" &&
     contest.requires_password &&
     !(await hasContestAccess(userId, contestId))
   ) {
@@ -307,22 +407,32 @@ export async function verifyContestPasswordAccess(userId, contestId, password) {
   };
 }
 
-export async function getContestSubmissions(userId, contestId) {
+export async function getContestSubmissions(
+  userId,
+  contestId,
+  userRole = "student",
+) {
+  const isAdmin = userRole === "admin";
   const [rows] = await pool.execute(
     `SELECT
        s.id,
+       s.user_id,
+       u.name AS username,
        s.problem_code,
        s.language,
        s.verdict,
        s.submitted_at
      FROM contest_submissions s
-     WHERE s.user_id = ? AND s.contest_id = ?
+     LEFT JOIN users u ON u.id = s.user_id
+     WHERE s.contest_id = ? ${isAdmin ? "" : "AND s.user_id = ?"}
      ORDER BY s.submitted_at DESC`,
-    [userId, contestId],
+    isAdmin ? [contestId] : [contestId, userId],
   );
 
   return rows.map((r) => ({
     id: r.id,
+    userId: r.user_id,
+    username: r.username || "Unknown",
     problemCode: r.problem_code,
     language: r.language,
     verdict: r.verdict,
@@ -362,12 +472,79 @@ export async function getContestAnnouncements(contestId) {
     [contestId],
   );
 
-  return rows.map((r) => ({
-    id: r.id,
-    title: r.title,
-    body: r.body,
-    postedAt: r.posted_at,
-  }));
+  return rows.map(mapAnnouncementRow);
+}
+
+export async function createContestAnnouncement(contestId, { title, body }) {
+  await ensureContestExists(contestId);
+
+  const [result] = await pool.execute(
+    `INSERT INTO contest_announcements (contest_id, title, body)
+     VALUES (?, ?, ?)`,
+    [contestId, title.trim(), body.trim()],
+  );
+
+  const [rows] = await pool.execute(
+    `SELECT id, title, body, posted_at
+     FROM contest_announcements
+     WHERE id = ? AND contest_id = ?
+     LIMIT 1`,
+    [result.insertId, contestId],
+  );
+
+  return mapAnnouncementRow(rows[0]);
+}
+
+export async function updateContestAnnouncement(
+  contestId,
+  announcementId,
+  { title, body },
+) {
+  const [existingRows] = await pool.execute(
+    `SELECT id
+     FROM contest_announcements
+     WHERE id = ? AND contest_id = ?
+     LIMIT 1`,
+    [announcementId, contestId],
+  );
+
+  if (!existingRows.length) {
+    throw createServiceError("Announcement not found.", 404);
+  }
+
+  await pool.execute(
+    `UPDATE contest_announcements
+     SET title = ?, body = ?
+     WHERE id = ? AND contest_id = ?`,
+    [title.trim(), body.trim(), announcementId, contestId],
+  );
+
+  const [rows] = await pool.execute(
+    `SELECT id, title, body, posted_at
+     FROM contest_announcements
+     WHERE id = ? AND contest_id = ?
+     LIMIT 1`,
+    [announcementId, contestId],
+  );
+
+  return mapAnnouncementRow(rows[0]);
+}
+
+export async function deleteContestAnnouncement(contestId, announcementId) {
+  const [result] = await pool.execute(
+    `DELETE FROM contest_announcements
+     WHERE id = ? AND contest_id = ?`,
+    [announcementId, contestId],
+  );
+
+  if (!result.affectedRows) {
+    throw createServiceError("Announcement not found.", 404);
+  }
+
+  return {
+    id: Number(announcementId),
+    contestId,
+  };
 }
 
 export async function getContestQueries(contestId) {
@@ -379,16 +556,7 @@ export async function getContestQueries(contestId) {
     [contestId],
   );
 
-  return rows.map((r) => ({
-    id: r.id,
-    userId: r.user_id,
-    username: r.username,
-    question: r.question,
-    answer: r.answer,
-    status: r.status,
-    createdAt: r.created_at,
-    answeredAt: r.answered_at,
-  }));
+  return rows.map(mapQueryRow);
 }
 
 export async function submitContestQuery(userId, contestId, question) {
@@ -429,4 +597,27 @@ export async function submitContestQuery(userId, contestId, question) {
     createdAt: new Date(),
     answeredAt: null,
   };
+}
+
+export async function replyToContestQuery(contestId, queryId, answer) {
+  const [result] = await pool.execute(
+    `UPDATE contest_queries
+     SET answer = ?, status = 'answered', answered_at = CURRENT_TIMESTAMP
+     WHERE id = ? AND contest_id = ?`,
+    [answer.trim(), queryId, contestId],
+  );
+
+  if (!result.affectedRows) {
+    throw createServiceError("Query not found for this contest.", 404);
+  }
+
+  const [rows] = await pool.execute(
+    `SELECT id, user_id, username, question, answer, status, created_at, answered_at
+     FROM contest_queries
+     WHERE id = ? AND contest_id = ?
+     LIMIT 1`,
+    [queryId, contestId],
+  );
+
+  return mapQueryRow(rows[0]);
 }
