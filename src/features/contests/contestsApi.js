@@ -68,3 +68,122 @@ export async function getContestDetailsApi(contestId) {
 
   return parseResponse(response);
 }
+
+export async function updateContestScheduleApi(contestId, payload) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/schedule`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    },
+  );
+
+  return parseResponse(response);
+}
+
+export async function deleteContestApi(contestId) {
+  const response = await fetch(`${API_URL}/api/contests/${contestId}`, {
+    method: "DELETE",
+    headers: getAuthHeaders(),
+  });
+
+  return parseResponse(response);
+}
+
+export async function getContestSubmissionsApi(contestId) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/submissions`,
+    { method: "GET", headers: getAuthHeaders() },
+  );
+  const json = await parseResponse(response);
+  return json.items;
+}
+
+export async function getContestLeaderboardApi(contestId) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/leaderboard`,
+    { method: "GET", headers: getAuthHeaders() },
+  );
+  const json = await parseResponse(response);
+  return json.items;
+}
+
+export async function getContestAnnouncementsApi(contestId) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/announcements`,
+    { method: "GET", headers: getAuthHeaders() },
+  );
+  const json = await parseResponse(response);
+  return json.items;
+}
+
+export async function createContestAnnouncementApi(contestId, payload) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/announcements`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    },
+  );
+  const json = await parseResponse(response);
+  return json.item;
+}
+
+export async function updateContestAnnouncementApi(
+  contestId,
+  announcementId,
+  payload,
+) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/announcements/${announcementId}`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    },
+  );
+  const json = await parseResponse(response);
+  return json.item;
+}
+
+export async function deleteContestAnnouncementApi(contestId, announcementId) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/announcements/${announcementId}`,
+    { method: "DELETE", headers: getAuthHeaders() },
+  );
+  return parseResponse(response);
+}
+
+export async function getContestQueriesApi(contestId) {
+  const response = await fetch(`${API_URL}/api/contests/${contestId}/queries`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+  });
+  const json = await parseResponse(response);
+  return json.items;
+}
+
+export async function submitQueryApi(contestId, question) {
+  const response = await fetch(`${API_URL}/api/contests/${contestId}/queries`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ question }),
+  });
+  const json = await parseResponse(response);
+  return json.item;
+}
+
+export async function replyContestQueryApi(contestId, queryId, answer) {
+  const response = await fetch(
+    `${API_URL}/api/contests/${contestId}/queries/${queryId}/reply`,
+    {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ answer }),
+    },
+  );
+  const json = await parseResponse(response);
+  return json.item;
+}

@@ -1,13 +1,13 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { fetchContestSubmissions, } from "../../../features/contests/contestsThunks";
 import { clearSubmissions } from "../../../features/contests/contestsSlice";
 import {
   selectContestSubmissions,
-  selectContestSubmissionsLoading,
   selectContestSubmissionsError,
+  selectContestSubmissionsLoading,
 } from "../../../features/contests/contestsSelectors";
+import { fetchContestSubmissions } from "../../../features/contests/contestsThunks";
 
 const VERDICT_STYLES = {
   Accepted: "bg-emerald-100 text-emerald-700 border border-emerald-200",
@@ -17,15 +17,16 @@ const VERDICT_STYLES = {
   "Compilation Error": "bg-slate-100 text-slate-600 border border-slate-200",
 };
 
-function timeAgo(dateStr) {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-  return `${Math.floor(diff / 86400)}d ago`;
+function formatDate(dateStr) {
+  return new Date(dateStr).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
-function ContestSubmissionsPage() {
+function AdminContestSubmissionsPage() {
   const dispatch = useDispatch();
   const { contestId } = useParams();
 
@@ -35,6 +36,7 @@ function ContestSubmissionsPage() {
 
   useEffect(() => {
     dispatch(fetchContestSubmissions(contestId));
+
     return () => {
       dispatch(clearSubmissions());
     };
@@ -59,33 +61,32 @@ function ContestSubmissionsPage() {
   if (!submissions.length) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center text-sm text-slate-400">
-        No submissions yet. Submit a solution to see it here.
+        No submissions yet.
       </div>
     );
   }
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      {/* Header */}
-      <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <div className="grid grid-cols-5 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold tracking-wider text-slate-500 uppercase">
+        <span>Participant</span>
         <span>Problem</span>
         <span>Verdict</span>
         <span>Language</span>
-        <span className="text-right">Time</span>
+        <span className="text-right">Submitted</span>
       </div>
 
-      {/* Rows */}
       {submissions.map((sub, index) => (
         <div
           key={sub.id}
-          className={`grid grid-cols-4 items-center px-5 py-3.5 text-sm transition hover:bg-slate-50 ${
+          className={`grid grid-cols-5 items-center px-5 py-3.5 text-sm transition hover:bg-slate-50 ${
             index !== submissions.length - 1 ? "border-b border-slate-100" : ""
           }`}
         >
-          <span className="font-mono font-semibold text-slate-800">
+          <span className="font-semibold text-slate-800">{sub.username}</span>
+          <span className="font-mono font-semibold text-slate-700">
             Problem {sub.problemCode}
           </span>
-
           <span>
             <span
               className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -95,11 +96,9 @@ function ContestSubmissionsPage() {
               {sub.verdict}
             </span>
           </span>
-
           <span className="text-slate-600">{sub.language}</span>
-
           <span className="text-right text-slate-400">
-            {timeAgo(sub.submittedAt)}
+            {formatDate(sub.submittedAt)}
           </span>
         </div>
       ))}
@@ -107,4 +106,4 @@ function ContestSubmissionsPage() {
   );
 }
 
-export default ContestSubmissionsPage;
+export default AdminContestSubmissionsPage;
