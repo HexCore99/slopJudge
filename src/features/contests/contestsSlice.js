@@ -7,8 +7,12 @@ import {
   fetchContestSubmissions,
   fetchContestLeaderboard,
   fetchContestAnnouncements,
+  createContestAnnouncement,
+  updateContestAnnouncement,
+  deleteContestAnnouncement,
   fetchContestQueries,
   submitQuery,
+  replyContestQuery,
 } from "./contestsThunks";
 
 const initialState = {
@@ -50,6 +54,8 @@ const initialState = {
     data: [],
     isLoading: false,
     error: null,
+    isSaving: false,
+    saveError: null,
   },
 
   queries: {
@@ -58,6 +64,8 @@ const initialState = {
     error: null,
     isSubmitting: false,
     submitError: null,
+    replyingId: null,
+    replyError: null,
   },
 };
 
@@ -112,6 +120,8 @@ const contestsSlice = createSlice({
       state.announcements.data = [];
       state.announcements.isLoading = false;
       state.announcements.error = null;
+      state.announcements.isSaving = false;
+      state.announcements.saveError = null;
     },
 
     clearQueries(state) {
@@ -120,6 +130,8 @@ const contestsSlice = createSlice({
       state.queries.error = null;
       state.queries.isSubmitting = false;
       state.queries.submitError = null;
+      state.queries.replyingId = null;
+      state.queries.replyError = null;
     },
   },
 
@@ -197,7 +209,8 @@ const contestsSlice = createSlice({
       })
       .addCase(fetchContestSubmissions.rejected, (state, action) => {
         state.submissions.isLoading = false;
-        state.submissions.error = action.payload || "Failed to fetch submissions.";
+        state.submissions.error =
+          action.payload || "Failed to fetch submissions.";
       })
 
       .addCase(fetchContestLeaderboard.pending, (state) => {
@@ -210,7 +223,8 @@ const contestsSlice = createSlice({
       })
       .addCase(fetchContestLeaderboard.rejected, (state, action) => {
         state.leaderboard.isLoading = false;
-        state.leaderboard.error = action.payload || "Failed to fetch leaderboard.";
+        state.leaderboard.error =
+          action.payload || "Failed to fetch leaderboard.";
       })
 
       .addCase(fetchContestAnnouncements.pending, (state) => {
@@ -223,7 +237,56 @@ const contestsSlice = createSlice({
       })
       .addCase(fetchContestAnnouncements.rejected, (state, action) => {
         state.announcements.isLoading = false;
-        state.announcements.error = action.payload || "Failed to fetch announcements.";
+        state.announcements.error =
+          action.payload || "Failed to fetch announcements.";
+      })
+
+      .addCase(createContestAnnouncement.pending, (state) => {
+        state.announcements.isSaving = true;
+        state.announcements.saveError = null;
+      })
+      .addCase(createContestAnnouncement.fulfilled, (state, action) => {
+        state.announcements.isSaving = false;
+        state.announcements.data.unshift(action.payload);
+      })
+      .addCase(createContestAnnouncement.rejected, (state, action) => {
+        state.announcements.isSaving = false;
+        state.announcements.saveError =
+          action.payload || "Failed to create announcement.";
+      })
+      .addCase(updateContestAnnouncement.pending, (state) => {
+        state.announcements.isSaving = true;
+        state.announcements.saveError = null;
+      })
+      .addCase(updateContestAnnouncement.fulfilled, (state, action) => {
+        state.announcements.isSaving = false;
+        const index = state.announcements.data.findIndex(
+          (item) => item.id === action.payload.id,
+        );
+
+        if (index !== -1) {
+          state.announcements.data[index] = action.payload;
+        }
+      })
+      .addCase(updateContestAnnouncement.rejected, (state, action) => {
+        state.announcements.isSaving = false;
+        state.announcements.saveError =
+          action.payload || "Failed to update announcement.";
+      })
+      .addCase(deleteContestAnnouncement.pending, (state) => {
+        state.announcements.isSaving = true;
+        state.announcements.saveError = null;
+      })
+      .addCase(deleteContestAnnouncement.fulfilled, (state, action) => {
+        state.announcements.isSaving = false;
+        state.announcements.data = state.announcements.data.filter(
+          (item) => item.id !== action.payload.id,
+        );
+      })
+      .addCase(deleteContestAnnouncement.rejected, (state, action) => {
+        state.announcements.isSaving = false;
+        state.announcements.saveError =
+          action.payload || "Failed to delete announcement.";
       })
 
       .addCase(fetchContestQueries.pending, (state) => {
@@ -250,6 +313,25 @@ const contestsSlice = createSlice({
       .addCase(submitQuery.rejected, (state, action) => {
         state.queries.isSubmitting = false;
         state.queries.submitError = action.payload || "Failed to submit query.";
+      })
+      .addCase(replyContestQuery.pending, (state, action) => {
+        state.queries.replyingId = action.meta.arg.queryId;
+        state.queries.replyError = null;
+      })
+      .addCase(replyContestQuery.fulfilled, (state, action) => {
+        state.queries.replyingId = null;
+        const index = state.queries.data.findIndex(
+          (item) => item.id === action.payload.id,
+        );
+
+        if (index !== -1) {
+          state.queries.data[index] = action.payload;
+        }
+      })
+      .addCase(replyContestQuery.rejected, (state, action) => {
+        state.queries.replyingId = null;
+        state.queries.replyError =
+          action.payload || "Failed to reply to query.";
       });
   },
 });
