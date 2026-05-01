@@ -8,6 +8,8 @@ import {
   Globe,
   Lock,
   Search,
+  Shield,
+  Trophy,
   X,
 } from "lucide-react";
 import AdminMoreMenu from "../../../components/common/AdminMoreMenu";
@@ -97,6 +99,7 @@ function buildContestOptions(live, upcoming, past) {
     startTime: contest.startTime,
     endTime: contest.endTime,
     requiresPassword: Boolean(contest.requiresPassword),
+    isRated: Boolean(contest.rated ?? contest.isRated),
   }));
 }
 
@@ -113,6 +116,7 @@ export default function CreateContestPage() {
   const loadError = useSelector(selectContestsError);
 
   const [isPrivate, setIsPrivate] = useState(false);
+  const [isRated, setIsRated] = useState(false);
   const [selectedProblems, setSelectedProblems] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [formDraft, setFormDraft] = useState({
@@ -147,9 +151,12 @@ export default function CreateContestPage() {
       : EMPTY_FORM;
   const draftValues = formDraft.key === formKey ? formDraft.values : {};
   const formData = { ...baseFormData, ...draftValues };
+  const displayedIsRated = isEditMode
+    ? Boolean(editingContest?.isRated)
+    : isRated;
   const displayedIsPrivate = isEditMode
-    ? Boolean(editingContest?.requiresPassword)
-    : isPrivate;
+    ? Boolean(editingContest?.requiresPassword) && !displayedIsRated
+    : isPrivate && !displayedIsRated;
 
   function handleToggleProblem(problem) {
     if (isEditMode) return;
@@ -170,6 +177,23 @@ export default function CreateContestPage() {
         [name]: value,
       },
     }));
+  }
+
+  function handleRatingChange(nextIsRated) {
+    if (isEditMode) return;
+
+    setIsRated(nextIsRated);
+
+    if (nextIsRated) {
+      setIsPrivate(false);
+      setFormDraft((prev) => ({
+        key: formKey,
+        values: {
+          ...(prev.key === formKey ? prev.values : {}),
+          password: "",
+        },
+      }));
+    }
   }
 
   async function handleSubmit(e) {
@@ -429,6 +453,49 @@ export default function CreateContestPage() {
 
                 <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
                   <h2 className="mb-5 text-[15px] font-semibold text-slate-800">
+                    Contest Rating
+                  </h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      disabled={isEditMode}
+                      onClick={() => handleRatingChange(true)}
+                      className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-3 transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                        displayedIsRated
+                          ? "border-amber-400 bg-amber-50 text-amber-700"
+                          : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                      }`}
+                    >
+                      <Trophy className="h-5 w-5" />
+                      <span className="text-[12px] font-semibold">Rated</span>
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isEditMode}
+                      onClick={() => handleRatingChange(false)}
+                      className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-3 transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                        !displayedIsRated
+                          ? "border-amber-400 bg-amber-50 text-amber-700"
+                          : "border-slate-200 text-slate-500 hover:bg-slate-50"
+                      }`}
+                    >
+                      <Shield className="h-5 w-5" />
+                      <span className="text-[12px] font-semibold">
+                        Unrated
+                      </span>
+                    </button>
+                  </div>
+
+                  {displayedIsRated && (
+                    <p className="mt-4 rounded-xl bg-amber-50 px-4 py-2 text-sm text-amber-700">
+                      Rated contests are public only, so private access is
+                      disabled.
+                    </p>
+                  )}
+                </div>
+
+                <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+                  <h2 className="mb-5 text-[15px] font-semibold text-slate-800">
                     Access Control
                   </h2>
                   <div className="grid grid-cols-2 gap-3">
@@ -447,7 +514,7 @@ export default function CreateContestPage() {
                     </button>
                     <button
                       type="button"
-                      disabled={isEditMode}
+                      disabled={isEditMode || displayedIsRated}
                       onClick={() => setIsPrivate(true)}
                       className={`flex flex-col items-center justify-center gap-2 rounded-xl border p-3 transition disabled:cursor-not-allowed disabled:opacity-60 ${
                         displayedIsPrivate
