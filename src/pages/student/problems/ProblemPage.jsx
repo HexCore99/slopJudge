@@ -84,7 +84,7 @@ function ProblemPage() {
 
   const backTo = contestId
     ? `/student/contests/${contestId}/problems`
-    : "/student/problems";
+    : location.state?.backTo || "/student/problems";
 
   const handleExpandToggle = useCallback(() => {
     setIsExpanded((prev) => !prev);

@@ -86,6 +86,7 @@ const router = createBrowserRouter([
       },
       { path: "problems", element: <ProblemBankPage /> },
       { path: "problems/create", element: <CreateProblemPage /> },
+      { path: "problems/:problemId", element: <ProblemPage /> },
       { path: "problems/:problemId/edit", element: <CreateProblemPage /> },
       { path: "editorials", element: <EditorialsPage /> },
     ],

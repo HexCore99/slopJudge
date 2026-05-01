@@ -212,7 +212,8 @@ export default function ProblemBankPage() {
                         >
                           <td className="px-6 py-4">
                             <Link
-                              to={`/admin/problems/${p.id}/edit`}
+                              to={`/admin/problems/${p.id}`}
+                              state={{ problem: p, backTo: "/admin/problems" }}
                               className="text-[14px] font-semibold text-slate-800 transition-colors hover:text-amber-700"
                             >
                               {p.title}
