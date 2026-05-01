@@ -11,7 +11,8 @@ export default function EmptyState({ onCreateClick }) {
         No discussion selected
       </h3>
       <p className="mb-8 max-w-xs text-sm leading-relaxed text-slate-400">
-        Pick a thread from the list, or start a new conversation with the community.
+        Pick a thread from the list, or start a new conversation with the
+        community.
       </p>
 
       <button
