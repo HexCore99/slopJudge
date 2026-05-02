@@ -1,33 +1,71 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { fetchContestSubmissions, } from "../../../features/contests/contestsThunks";
+import { fetchContestSubmissions } from "../../../features/contests/contestsThunks";
 import { clearSubmissions } from "../../../features/contests/contestsSlice";
 import {
   selectContestSubmissions,
   selectContestSubmissionsLoading,
   selectContestSubmissionsError,
 } from "../../../features/contests/contestsSelectors";
+import SubmissionsPanel from "../profile/components/SubmissionsPanel";
+import SubmissionSlidePanel from "../profile/components/SubmissionSlidePanel";
 
-const VERDICT_STYLES = {
-  Accepted: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-  "Wrong Answer": "bg-red-100 text-red-700 border border-red-200",
-  "Time Limit Exceeded": "bg-amber-100 text-amber-700 border border-amber-200",
-  "Runtime Error": "bg-purple-100 text-purple-700 border border-purple-200",
-  "Compilation Error": "bg-slate-100 text-slate-600 border border-slate-200",
+const VERDICT_CODES = {
+  Accepted: "AC",
+  "Wrong Answer": "WA",
+  "Time Limit Exceeded": "TLE",
+  "Runtime Error": "RE",
+  "Compilation Error": "CE",
 };
 
 function timeAgo(dateStr) {
-  const diff = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+  const submittedTime = new Date(dateStr).getTime();
+  if (Number.isNaN(submittedTime)) return "--";
+
+  const diff = Math.max(0, Math.floor((Date.now() - submittedTime) / 1000));
   if (diff < 60) return `${diff}s ago`;
   if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
+function getFilterKey(verdict) {
+  if (verdict === "AC") return "ac";
+  if (verdict === "WA") return "wa";
+  return "other";
+}
+
+function mapContestSubmission(submission) {
+  const verdict = VERDICT_CODES[submission.verdict] || submission.verdict;
+  const verdictCode = String(verdict || "CE").toUpperCase();
+  const sourceCode =
+    submission.code ?? submission.sourceCode ?? submission.source_code;
+
+  return {
+    problem: `Problem ${submission.problemCode}`,
+    id: `Submission #${submission.id}`,
+    verdict: verdictCode,
+    time: timeAgo(submission.submittedAt),
+    timeLabel: "Submitted Ago",
+    mem: submission.memory ?? submission.mem ?? "--",
+    lang: submission.language,
+    f: getFilterKey(verdictCode),
+    at: submission.submittedAt || String(submission.id),
+    tc:
+      submission.testCases ||
+      submission.tc ||
+      "Judge test-case details are not available for this contest submission.",
+    code:
+      sourceCode ||
+      "Source code is not available for this contest submission yet.\n\nThe current contest submissions API returns verdict metadata only.",
+  };
+}
+
 function ContestSubmissionsPage() {
   const dispatch = useDispatch();
   const { contestId } = useParams();
+  const [selectedSubmissionIndex, setSelectedSubmissionIndex] = useState(null);
 
   const submissions = useSelector(selectContestSubmissions);
   const isLoading = useSelector(selectContestSubmissionsLoading);
@@ -39,6 +77,25 @@ function ContestSubmissionsPage() {
       dispatch(clearSubmissions());
     };
   }, [dispatch, contestId]);
+
+  const submissionRows = useMemo(
+    () => submissions.map(mapContestSubmission),
+    [submissions],
+  );
+  const selectedSubmission =
+    selectedSubmissionIndex === null
+      ? null
+      : submissionRows[selectedSubmissionIndex];
+
+  function openSubmission(index) {
+    if (index >= 0 && index < submissionRows.length) {
+      setSelectedSubmissionIndex(index);
+    }
+  }
+
+  function closeSubmission() {
+    setSelectedSubmissionIndex(null);
+  }
 
   if (isLoading) {
     return (
@@ -65,45 +122,23 @@ function ContestSubmissionsPage() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      {/* Header */}
-      <div className="grid grid-cols-4 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
-        <span>Problem</span>
-        <span>Verdict</span>
-        <span>Language</span>
-        <span className="text-right">Time</span>
-      </div>
-
-      {/* Rows */}
-      {submissions.map((sub, index) => (
-        <div
-          key={sub.id}
-          className={`grid grid-cols-4 items-center px-5 py-3.5 text-sm transition hover:bg-slate-50 ${
-            index !== submissions.length - 1 ? "border-b border-slate-100" : ""
-          }`}
-        >
-          <span className="font-mono font-semibold text-slate-800">
-            Problem {sub.problemCode}
-          </span>
-
-          <span>
-            <span
-              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                VERDICT_STYLES[sub.verdict] || "bg-slate-100 text-slate-600"
-              }`}
-            >
-              {sub.verdict}
-            </span>
-          </span>
-
-          <span className="text-slate-600">{sub.language}</span>
-
-          <span className="text-right text-slate-400">
-            {timeAgo(sub.submittedAt)}
-          </span>
-        </div>
-      ))}
-    </div>
+    <>
+      <SubmissionSlidePanel
+        submission={selectedSubmission}
+        isOpen={selectedSubmissionIndex !== null}
+        onClose={closeSubmission}
+      />
+      <SubmissionsPanel
+        submissions={submissionRows}
+        allSubmissions={submissionRows}
+        onOpenSubmission={openSubmission}
+        totalCount={submissionRows.length}
+        emptyMessage="No submissions match this verdict filter."
+        problemHint=""
+        verdictHint="click for code"
+        showLoadMore={false}
+      />
+    </>
   );
 }
 
