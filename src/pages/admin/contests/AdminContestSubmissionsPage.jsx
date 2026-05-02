@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { clearSubmissions } from "../../../features/contests/contestsSlice";
@@ -8,13 +8,15 @@ import {
   selectContestSubmissionsLoading,
 } from "../../../features/contests/contestsSelectors";
 import { fetchContestSubmissions } from "../../../features/contests/contestsThunks";
+import SubmissionSlidePanel from "../../student/profile/components/SubmissionSlidePanel";
+import SubmissionsPanel from "../../student/profile/components/SubmissionsPanel";
 
-const VERDICT_STYLES = {
-  Accepted: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-  "Wrong Answer": "bg-red-100 text-red-700 border border-red-200",
-  "Time Limit Exceeded": "bg-amber-100 text-amber-700 border border-amber-200",
-  "Runtime Error": "bg-purple-100 text-purple-700 border border-purple-200",
-  "Compilation Error": "bg-slate-100 text-slate-600 border border-slate-200",
+const VERDICT_CODES = {
+  Accepted: "AC",
+  "Wrong Answer": "WA",
+  "Time Limit Exceeded": "TLE",
+  "Runtime Error": "RE",
+  "Compilation Error": "CE",
 };
 
 function formatDate(dateStr) {
@@ -26,9 +28,44 @@ function formatDate(dateStr) {
   });
 }
 
+function getFilterKey(verdict) {
+  if (verdict === "AC") return "ac";
+  if (verdict === "WA") return "wa";
+  return "other";
+}
+
+function mapAdminSubmission(submission) {
+  const verdict = VERDICT_CODES[submission.verdict] || submission.verdict;
+  const verdictCode = String(verdict || "CE").toUpperCase();
+  const participant = submission.username || "Unknown student";
+  const sourceCode =
+    submission.code ?? submission.sourceCode ?? submission.source_code;
+
+  return {
+    problem: `Problem ${submission.problemCode}`,
+    id: `${participant} · Submission #${submission.id}`,
+    participant,
+    verdict: verdictCode,
+    time: formatDate(submission.submittedAt),
+    timeLabel: "Submitted",
+    mem: submission.memory ?? submission.mem ?? "--",
+    lang: submission.language,
+    f: getFilterKey(verdictCode),
+    at: submission.submittedAt || String(submission.id),
+    tc:
+      submission.testCases ||
+      submission.tc ||
+      "Judge test-case details are not available for this contest submission.",
+    code:
+      sourceCode ||
+      "Source code is not available for this contest submission yet.\n\nThe current contest submissions API returns verdict metadata only.",
+  };
+}
+
 function AdminContestSubmissionsPage() {
   const dispatch = useDispatch();
   const { contestId } = useParams();
+  const [selectedSubmissionIndex, setSelectedSubmissionIndex] = useState(null);
 
   const submissions = useSelector(selectContestSubmissions);
   const isLoading = useSelector(selectContestSubmissionsLoading);
@@ -41,6 +78,25 @@ function AdminContestSubmissionsPage() {
       dispatch(clearSubmissions());
     };
   }, [dispatch, contestId]);
+
+  const submissionRows = useMemo(
+    () => submissions.map(mapAdminSubmission),
+    [submissions],
+  );
+  const selectedSubmission =
+    selectedSubmissionIndex === null
+      ? null
+      : submissionRows[selectedSubmissionIndex];
+
+  function openSubmission(index) {
+    if (index >= 0 && index < submissionRows.length) {
+      setSelectedSubmissionIndex(index);
+    }
+  }
+
+  function closeSubmission() {
+    setSelectedSubmissionIndex(null);
+  }
 
   if (isLoading) {
     return (
@@ -67,42 +123,28 @@ function AdminContestSubmissionsPage() {
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="grid grid-cols-5 border-b border-slate-200 bg-slate-50 px-5 py-3 text-xs font-semibold tracking-wider text-slate-500 uppercase">
-        <span>Participant</span>
-        <span>Problem</span>
-        <span>Verdict</span>
-        <span>Language</span>
-        <span className="text-right">Submitted</span>
-      </div>
-
-      {submissions.map((sub, index) => (
-        <div
-          key={sub.id}
-          className={`grid grid-cols-5 items-center px-5 py-3.5 text-sm transition hover:bg-slate-50 ${
-            index !== submissions.length - 1 ? "border-b border-slate-100" : ""
-          }`}
-        >
-          <span className="font-semibold text-slate-800">{sub.username}</span>
-          <span className="font-mono font-semibold text-slate-700">
-            Problem {sub.problemCode}
-          </span>
-          <span>
-            <span
-              className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                VERDICT_STYLES[sub.verdict] || "bg-slate-100 text-slate-600"
-              }`}
-            >
-              {sub.verdict}
-            </span>
-          </span>
-          <span className="text-slate-600">{sub.language}</span>
-          <span className="text-right text-slate-400">
-            {formatDate(sub.submittedAt)}
-          </span>
-        </div>
-      ))}
-    </div>
+    <>
+      <SubmissionSlidePanel
+        submission={selectedSubmission}
+        isOpen={selectedSubmissionIndex !== null}
+        onClose={closeSubmission}
+        onToast={() => {}}
+      />
+      <SubmissionsPanel
+        submissions={submissionRows}
+        allSubmissions={submissionRows}
+        onOpenSubmission={openSubmission}
+        title="All Contest Submissions"
+        totalCount={submissionRows.length}
+        emptyMessage="No submissions match this verdict filter."
+        problemHint=""
+        verdictHint="click for code"
+        timeHeader="SUBMITTED"
+        memoryHeader="MEMORY"
+        languageHeader="LANG"
+        showLoadMore={false}
+      />
+    </>
   );
 }
 

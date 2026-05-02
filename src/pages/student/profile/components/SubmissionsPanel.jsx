@@ -83,7 +83,7 @@ export default function SubmissionsPanel({
       </div>
 
       {/* Column headers */}
-      <div className="hidden grid-cols-12 gap-2 rounded-xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-[11px] font-semibold tracking-wider text-sky-700 sm:grid">
+      <div className="hidden grid-cols-12 gap-2 rounded-xl border border-amber-200 bg-amber-100/70 px-4 py-3 text-[11px] font-semibold tracking-wider text-amber-800 shadow-sm sm:grid">
         <div className="col-span-5">
           PROBLEM
           {problemHint && (

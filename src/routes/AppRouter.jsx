@@ -24,6 +24,7 @@ import ContestProblemsPage from "../pages/student/contests/ContestProblemsPage";
 import ContestQueriesPage from "../pages/student/contests/ContestQueriesPage";
 import ContestSubmissionsPage from "../pages/student/contests/ContestSubmissionsPage";
 import PastContestsPage from "../pages/student/contests/PastContestsPage";
+import GlobalLeaderboardPage from "../pages/student/leaderboard/GlobalLeaderboardPage";
 import ProblemPage from "../pages/student/problems/ProblemPage";
 import StudentProblemBankPage from "../pages/student/problems/StudentProblemBankPage";
 import ProfilePage from "../pages/student/profile/ProfilePage";
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
       { path: "profile", element: <ProfilePage /> },
       { path: "contests", element: <ContestPage /> },
       { path: "contests/past", element: <PastContestsPage /> },
+      { path: "leaderboard", element: <GlobalLeaderboardPage /> },
       { path: "problems", element: <StudentProblemBankPage /> },
       { path: "discuss", element: <DiscussionPage /> },
       { path: "problems/:problemId", element: <ProblemPage /> },

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { BookOpen, Check, Copy, FileText, History } from "lucide-react";
+import { useParams } from "react-router-dom";
 import TagChip from "../../../components/common/TagChip";
+import ContestSubmissionsPage from "../../../pages/student/contests/ContestSubmissionsPage";
 import ProblemDifficultyBadge from "./ProblemDifficultyBadge";
 
 function CopyButton({ text }) {
@@ -86,41 +88,6 @@ const LEFT_TABS = [
   { key: "submissions", label: "Submissions", icon: History },
   { key: "editorial", label: "Editorial", icon: BookOpen },
 ];
-
-const MOCK_SUBMISSIONS = [
-  {
-    id: 1,
-    time: "2 minutes ago",
-    language: "C++",
-    verdict: "Accepted",
-    runtime: "12ms",
-    memory: "3.8 MB",
-  },
-  {
-    id: 2,
-    time: "15 minutes ago",
-    language: "C++",
-    verdict: "Wrong Answer",
-    runtime: "8ms",
-    memory: "3.6 MB",
-  },
-  {
-    id: 3,
-    time: "1 hour ago",
-    language: "Python",
-    verdict: "Time Limit Exceeded",
-    runtime: "> 1000ms",
-    memory: "12.4 MB",
-  },
-];
-
-const VERDICT_COLORS = {
-  Accepted: "text-emerald-600",
-  "Wrong Answer": "text-rose-600",
-  "Time Limit Exceeded": "text-amber-600",
-  "Runtime Error": "text-orange-600",
-  "Compilation Error": "text-red-600",
-};
 
 function DescriptionContent({ problem }) {
   return (
@@ -210,42 +177,22 @@ function DescriptionContent({ problem }) {
 }
 
 function SubmissionsContent() {
+  const { contestId } = useParams();
+
+  if (!contestId) {
+    return (
+      <div className="px-5 py-6 sm:px-7">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
+          Contest submissions are available when this problem is opened from a
+          contest.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-5 py-6 sm:px-7">
-      <h2 className="mb-4 text-lg font-bold text-slate-800">My Submissions</h2>
-
-      <div className="overflow-hidden rounded-xl border border-slate-200">
-        <div className="grid grid-cols-[1.2fr_1fr_1.4fr_1fr_1fr] border-b border-slate-200 bg-slate-50 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-          <span>Time</span>
-          <span>Language</span>
-          <span>Verdict</span>
-          <span>Runtime</span>
-          <span>Memory</span>
-        </div>
-
-        {MOCK_SUBMISSIONS.map((submission) => (
-          <div
-            key={submission.id}
-            className="grid grid-cols-[1.2fr_1fr_1.4fr_1fr_1fr] border-b border-slate-100 px-4 py-3 text-[13px] transition last:border-b-0 hover:bg-slate-50/60"
-          >
-            <span className="text-slate-500">{submission.time}</span>
-            <span className="font-medium text-slate-700">
-              {submission.language}
-            </span>
-            <span
-              className={`font-semibold ${VERDICT_COLORS[submission.verdict] || "text-slate-600"}`}
-            >
-              {submission.verdict}
-            </span>
-            <span className="font-mono text-slate-500">
-              {submission.runtime}
-            </span>
-            <span className="font-mono text-slate-500">
-              {submission.memory}
-            </span>
-          </div>
-        ))}
-      </div>
+      <ContestSubmissionsPage />
     </div>
   );
 }
